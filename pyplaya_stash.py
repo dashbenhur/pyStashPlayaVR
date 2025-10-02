@@ -9,17 +9,19 @@ from stashapi.stashapp import StashInterface
 
 
 ##### config
-PORT = 80
-API_BASE = "/api/playa/v2/"
-FILES_BASE = "/Users/scott/Desktop/Private VR"
-ALLOWED_EXTENSIONS = ["mp4", "mkv"]
 
+# the port for this webserver
+PORT = 80
+
+# the address at which this script, and PlayaVR, will access a Stash instance
 STASH_SCHEME = "http"
 STASH_HOST   = "192.168.1.33"
 STASH_PORT   = "9999"
 
-##### helpers
+##### end config
 
+
+API_BASE = "/api/playa/v2/"
 STASH_BASE_URL = f"{STASH_SCHEME}://{STASH_HOST}:{STASH_PORT}"
 stash = StashInterface({
     "scheme": STASH_SCHEME,
