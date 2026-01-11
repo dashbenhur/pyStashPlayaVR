@@ -11,11 +11,11 @@ from stashapi.stashapp import StashInterface
 ##### config
 
 # the port for this webserver
-PORT = 80
+PORT = 6969
 
 # the address at which this script, and PlayaVR, will access a Stash instance
 STASH_SCHEME = "http"
-STASH_HOST   = "192.168.1.33"
+STASH_HOST   = "192.168.86.56"
 STASH_PORT   = "9999"
 
 ##### end config
