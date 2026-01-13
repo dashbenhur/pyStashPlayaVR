@@ -23,6 +23,8 @@ STASH_PORT   = "9999"
 
 API_BASE = "/api/playa/v2/"
 STASH_BASE_URL = f"{STASH_SCHEME}://{STASH_HOST}:{STASH_PORT}"
+# TODO: Performance - Consider implementing connection pooling or reusing the StashInterface instance
+# TODO: Performance - Add error handling and retry logic for failed Stash API connections
 stash = StashInterface({
     "scheme": STASH_SCHEME,
     "host":   STASH_HOST,
@@ -79,6 +81,8 @@ async def webGetConfig(request):
 @routes.get(API_BASE+'categories')
 async def webGetCategories(request):
   print('/categories requested')
+  # TODO: Performance - Cache tag results with TTL (e.g., 5-10 minutes) to reduce Stash API calls
+  # TODO: Performance - Consider lazy loading or pagination for large tag lists
   cats = [{'id': t['id'], 'title': t['name']} for t in stash.find_tags()]
   return web.json_response(wrapJSON(cats))
 
@@ -93,6 +97,8 @@ def stream_url(idd):
 
 @routes.get(API_BASE+'videos')
 async def webGetVideos(request):
+  # TODO: Performance - Add input validation and error handling for query parameters
+  # TODO: Performance - Consider implementing request caching based on query parameters
   pageIndex = int(request.query['page-index'])
   pageSize  = int(request.query['page-size'])
   order     = request.query['order']
@@ -119,6 +125,9 @@ async def webGetVideos(request):
     direction_str = 'DESC'
 
   #query
+  # TODO: Performance - Consider batching multiple scene requests to reduce GraphQL query overhead
+  # TODO: Performance - Only fetch required fields to minimize payload size
+  # TODO: Performance - Add error handling for failed GraphQL queries with proper logging
   scenes = stash._GQL("""
     query getScenes($perpage: Int, $page: Int, $order: String, $dir: SortDirectionEnum, $cats: [ID!]) {
       findScenes(filter: { per_page: $perpage, page: $page, sort: $order, direction: $dir }
@@ -146,6 +155,8 @@ async def webGetVideos(request):
   scenes = scenes['scenes']
   page_count = math.ceil(int(scene_count)/int(pageSize))
 
+  # TODO: Performance - Use list comprehension instead of append in loop for better performance
+  # TODO: Performance - Consider using dataclasses or pydantic models for scene data validation
   scenes_output = []
   for s in scenes:
     s_out = {
@@ -177,11 +188,14 @@ async def webGetVideos(request):
 
 @routes.get(API_BASE+'video/{idd}')
 async def webGetVideo(request):
+  # TODO: Performance - Implement LRU cache for individual video metadata lookups
+  # TODO: Performance - Add error handling for invalid ID format (non-integer)
   idd_str = request.match_info.get('idd', 'Invalid')
   if (idd_str == 'Invalid'):
     return web.HTTPBadRequest("invalid video id")
   idd = int(idd_str)
 
+  # TODO: Performance - Consider caching scene metadata with short TTL (1-5 minutes)
   s = stash._GQL("""
     query getScene($id: ID!) {
       findScene(id: $id) {
@@ -215,6 +229,11 @@ async def webGetVideo(request):
 
 @routes.get('/getvid/{idd}')
 async def webGetVideo(request):
+  # TODO: Performance - This endpoint references undefined 'allVideoInfo' variable - needs implementation
+  # TODO: Performance - Increase chunk_size from 8192 to 64KB-256KB for better streaming performance
+  # TODO: Performance - Use aiofiles for async file I/O to prevent blocking the event loop
+  # TODO: Performance - Cache file size and existence checks to reduce filesystem calls
+  # TODO: Performance - Add ETag/Last-Modified headers for browser caching
   print(request.url.host)
   idd_str = request.match_info.get('idd', 'Invalid')
   if (idd_str == 'Invalid'):
@@ -256,7 +275,7 @@ async def webGetVideo(request):
 
     with open(file_path, 'rb') as f:
       f.seek(start)
-      chunk_size = 8192
+      chunk_size = 262144  # 256KB for better streaming performance (previously 8192)
       while start <= end:
         read_size = min(chunk_size, end - start + 1)
         chunk = f.read(read_size)
@@ -272,6 +291,11 @@ async def webGetVideo(request):
 
   
 
+# TODO: Performance - Add middleware for response compression (gzip/brotli) to reduce bandwidth
+# TODO: Performance - Configure client_max_size to handle large video uploads if needed
+# TODO: Performance - Consider adding rate limiting middleware to prevent abuse
+# TODO: Performance - Use structured logging instead of print() statements throughout the code
+# TODO: Performance - Add metrics/monitoring for request latency and error rates
 app = web.Application()
 app.add_routes(routes)
 logging.basicConfig(level=logging.DEBUG)
