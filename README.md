@@ -16,12 +16,12 @@ Thumbnail requests are proxied through this script. JPEG and PNG covers are pass
 - `stashapi` (for Stash version)
 - `Pillow` (for WebP thumbnail conversion)
 
-Install them with:
+Install them with [uv](https://docs.astral.sh/uv/):
 
 ```shell
-python -m pip install -r requirements.txt
+uv sync
 ```
 
 ## Running
 
-`python3 pyplaya_stash.py`
+`uv run pyplaya_stash.py`
